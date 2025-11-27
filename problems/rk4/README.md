@@ -9,9 +9,9 @@ This is a **scientific computing benchmark** that exposes you to high-performanc
 ## Background
 
 We solve the **3D heat equation**
-$$
+$
 \frac{\partial u}{\partial t} = \alpha \nabla^2 u,
-$$
+$
 on a uniform Cartesian grid, where:
 
 - $u = u(t,x,y,z)$ is temperature (or any scalar field)
