@@ -89,10 +89,10 @@ Notice that $k_2$ and $k_3$ both estimate the slope at the midpoint, but $k_3$ u
 
 For each time step, RK4 computes four slope estimates and combines them:
 
-1. $k_1 = \alpha \, \nabla^2(u_n)$
-2. $k_2 = \alpha \, \nabla^2(u_n + \tfrac{\Delta t}{2} k_1)$
-3. $k_3 = \alpha \, \nabla^2(u_n + \tfrac{\Delta t}{2} k_2)$
-4. $k_4 = \alpha \, \nabla^2(u_n + \Delta t \, k_3)$
+1. $k_1 = \alpha \nabla^2(u_n)$
+2. $k_2 = \alpha \nabla^2(u_n + \tfrac{\Delta t}{2} k_1)$
+3. $k_3 = \alpha \nabla^2(u_n + \tfrac{\Delta t}{2} k_2)$
+4. $k_4 = \alpha \nabla^2(u_n + \Delta t k_3)$
 
 Then the solution is updated with a weighted average:
 
