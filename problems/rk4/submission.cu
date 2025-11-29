@@ -51,18 +51,26 @@ torch::Tensor custom_kernel(
     int r = 4
 
     // Allocate output tensor (or reuse u0 for in-place)
+    u0 = u0.contiguous();
     torch::Tensor result = u0.clone();  // TODO: Modify as needed
-    
+    const float *d_u0 = u0.data_ptr<float>();
+    float *d_result = result.data_ptr<float>();
 
+    dim3 threadsPerBlock(8, 8, 8);
+    dim3 numBlocks(
+        (Nx + threadsPerBlock.x - 1) / threadsPerBlock.x,
+        (Ny + threadsPerBlock.y - 1) / threadsPerBlock.y,
+        (Nz + threadsPerBlock.z - 1) / threadsPerBlock.z);
 
     ////
     // Launch your kernel here
     ////
-    dim3 gridDim = 
-    dim3 blockDim
-    fused_kernel<<>>()
-
-
+    fused_kernel<<<numBlocks, threadsPerBlock>>>(
+        d_result,
+        d_u0,
+        Nz, Ny, Nx,
+        c0, c1, c2, c3, c4,
+        dt, inv_hx2, inv_hy2, inv_hz2);
 
     // Check for errors
     cudaError_t err = cudaGetLastError();
