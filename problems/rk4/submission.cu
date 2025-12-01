@@ -6,6 +6,8 @@
 // Example: __global__ void kernel(...) { ... }
 //
 
+// TODO: problem. You have garbage values in your keys (in the boundary regions). How does this affect later computation? worth thinking hard about...
+
 struct GlobalConstants
 {
     float c0, c1, c2, c3, c4;
