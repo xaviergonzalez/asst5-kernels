@@ -25,7 +25,7 @@ get_laplacian_at_point(
     torch::PackedTensorAccessor32<float, 3, torch::RestrictPtrTraits> lap,
     int tx, int ty, int tz)
 {
-    float u_xx = (cuConstParams.c0 * u[tz, ty, tx] + 
+    float u_xx = (cuConstParams.c0 * u[tz][ty][tx] + 
     cuConstParams.c1 * (u[tz][ty][tx-1] + u[tz][ty][tx+1]) + 
     cuConstParams.c2 * (u[tz][ty][tx-2] + u[tz][ty][tx+2]) + 
     cuConstParams.c3 * (u[tz][ty][tx-3] + u[tz][ty][tx+3]) + 
@@ -53,7 +53,7 @@ get_laplacian_two_points(
     torch::PackedTensorAccessor32<float, 3, torch::RestrictPtrTraits> lap,
     int tx, int ty, int tz, float second_weight)
 {
-    float u_xx = (cuConstParams.c0 * u[tz, ty, tx] +
+    float u_xx = (cuConstParams.c0 * u[tz][ty][tx] +
                   cuConstParams.c1 * (u[tz][ty][tx - 1] + u[tz][ty][tx + 1]) +
                   cuConstParams.c2 * (u[tz][ty][tx - 2] + u[tz][ty][tx + 2]) +
                   cuConstParams.c3 * (u[tz][ty][tx - 3] + u[tz][ty][tx + 3]) +
@@ -72,7 +72,7 @@ get_laplacian_two_points(
                   cuConstParams.c4 * (u[tz - 4][ty][tx] + u[tz + 4][ty][tx])) *
                  cuConstParams.inv_hz2;
     // now repeat same computation but for keys
-    float k_xx = (cuConstParams.c0 * k[tz, ty, tx] +
+    float k_xx = (cuConstParams.c0 * k[tz][ty][tx] +
                   cuConstParams.c1 * (k[tz][ty][tx - 1] + k[tz][ty][tx + 1]) +
                   cuConstParams.c2 * (k[tz][ty][tx - 2] + k[tz][ty][tx + 2]) +
                   cuConstParams.c3 * (k[tz][ty][tx - 3] + k[tz][ty][tx + 3]) +
@@ -178,7 +178,7 @@ __global__ void get_k1(
 __global__ void get_k2(
     torch::PackedTensorAccessor32<float, 3, torch::RestrictPtrTraits> u,
     torch::PackedTensorAccessor32<float, 3, torch::RestrictPtrTraits> k1,
-    torch::PackedTensorAccessor32<float, 3, torch::RestrictPtrTraits> k2,
+    torch::PackedTensorAccessor32<float, 3, torch::RestrictPtrTraits> k2
 )
 {
     int tx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -389,22 +389,22 @@ torch::Tensor custom_kernel(
     for (int step = 0; step < n_steps; ++step) {
         get_k1<<<numBlocks, threadsPerBlock>>>(
             u_acc,
-            k1_acc,
+            k1_acc
         );
         get_k2<<<numBlocks, threadsPerBlock>>>(
             u_acc,
             k1_acc,
-            k2_acc,
+            k2_acc
         );
         get_k3<<<numBlocks, threadsPerBlock>>>(
             u_acc,
             k2_acc,
-            k3_acc,
+            k3_acc
         );
         get_k4<<<numBlocks, threadsPerBlock>>>(
             u_acc,
             k3_acc,
-            k4_acc,
+            k4_acc
         );
         combine_rk4_step<<<numBlocks, threadsPerBlock>>>(
             u_acc,
