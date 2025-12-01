@@ -26,23 +26,23 @@ get_laplacian_at_point(
     int tx, int ty, int tz)
 {
     float u_xx = (cuConstParams.c0 * u[tz, ty, tx] + 
-    cuConstParams.c1 * (u[tz, ty, tx-1] + u[tz, ty, tx+1]) + 
-    cuConstParams.c2 * (u[tz, ty, tx-2] + u[tz, ty, tx+2]) + 
-    cuConstParams.c3 * (u[tz, ty, tx-3] + u[tz, ty, tx+3]) + 
-    cuConstParams.c4 * (u[tz, ty, tx-4] + u[tz, ty, tx+4])) * cuConstParams.inv_hx2;
-    float u_yy = (cuConstParams.c0 * u[tz, ty, tx] +
-                  cuConstParams.c1 * (u[tz, ty - 1, tx] + u[tz, ty + 1, tx]) +
-                  cuConstParams.c2 * (u[tz, ty - 2, tx] + u[tz, ty + 2, tx]) +
-                  cuConstParams.c3 * (u[tz, ty - 3, tx] + u[tz, ty + 3, tx]) +
-                  cuConstParams.c4 * (u[tz, ty - 4, tx] + u[tz, ty + 4, tx])) *
+    cuConstParams.c1 * (u[tz][ty][tx-1] + u[tz][ty][tx+1]) + 
+    cuConstParams.c2 * (u[tz][ty][tx-2] + u[tz][ty][tx+2]) + 
+    cuConstParams.c3 * (u[tz][ty][tx-3] + u[tz][ty][tx+3]) + 
+    cuConstParams.c4 * (u[tz][ty][tx-4] + u[tz][ty][tx+4])) * cuConstParams.inv_hx2;
+    float u_yy = (cuConstParams.c0 * u[tz][ty][tx] +
+                  cuConstParams.c1 * (u[tz][ty - 1][tx] + u[tz][ty + 1][tx]) +
+                  cuConstParams.c2 * (u[tz][ty - 2][tx] + u[tz][ty + 2][tx]) +
+                  cuConstParams.c3 * (u[tz][ty - 3][tx] + u[tz][ty + 3][tx]) +
+                  cuConstParams.c4 * (u[tz][ty - 4][tx] + u[tz][ty + 4][tx])) *
                  cuConstParams.inv_hy2;
-    float u_zz = (cuConstParams.c0 * u[tz, ty, tx] +
-                  cuConstParams.c1 * (u[tz-1, ty, tx] + u[tz+1, ty, tx]) +
-                  cuConstParams.c2 * (u[tz-2, ty, tx] + u[tz+2, ty, tx]) +
-                  cuConstParams.c3 * (u[tz-3, ty, tx] + u[tz+3, ty, tx]) +
-                  cuConstParams.c4 * (u[tz-4, ty, tx] + u[tz+4, ty, tx])) *
+    float u_zz = (cuConstParams.c0 * u[tz][ty][tx] +
+                  cuConstParams.c1 * (u[tz-1][ty][tx] + u[tz+1][ty][tx]) +
+                  cuConstParams.c2 * (u[tz-2][ty][tx] + u[tz+2][ty][tx]) +
+                  cuConstParams.c3 * (u[tz-3][ty][tx] + u[tz+3][ty][tx]) +
+                  cuConstParams.c4 * (u[tz-4][ty][tx] + u[tz+4][ty][tx])) *
                  cuConstParams.inv_hz2;
-    lap[tz, ty, tx] = cuConstParams.alpha * (u_xx + u_yy + u_zz);
+    lap[tz][ty][tx] = cuConstParams.alpha * (u_xx + u_yy + u_zz);
 }
 
 // helper function for computing k2, k3, k4
@@ -54,43 +54,43 @@ get_laplacian_two_points(
     int tx, int ty, int tz, float second_weight)
 {
     float u_xx = (cuConstParams.c0 * u[tz, ty, tx] +
-                  cuConstParams.c1 * (u[tz, ty, tx - 1] + u[tz, ty, tx + 1]) +
-                  cuConstParams.c2 * (u[tz, ty, tx - 2] + u[tz, ty, tx + 2]) +
-                  cuConstParams.c3 * (u[tz, ty, tx - 3] + u[tz, ty, tx + 3]) +
-                  cuConstParams.c4 * (u[tz, ty, tx - 4] + u[tz, ty, tx + 4])) *
+                  cuConstParams.c1 * (u[tz][ty][tx - 1] + u[tz][ty][tx + 1]) +
+                  cuConstParams.c2 * (u[tz][ty][tx - 2] + u[tz][ty][tx + 2]) +
+                  cuConstParams.c3 * (u[tz][ty][tx - 3] + u[tz][ty][tx + 3]) +
+                  cuConstParams.c4 * (u[tz][ty][tx - 4] + u[tz][ty][tx + 4])) *
                  cuConstParams.inv_hx2;
-    float u_yy = (cuConstParams.c0 * u[tz, ty, tx] +
-                  cuConstParams.c1 * (u[tz, ty - 1, tx] + u[tz, ty + 1, tx]) +
-                  cuConstParams.c2 * (u[tz, ty - 2, tx] + u[tz, ty + 2, tx]) +
-                  cuConstParams.c3 * (u[tz, ty - 3, tx] + u[tz, ty + 3, tx]) +
-                  cuConstParams.c4 * (u[tz, ty - 4, tx] + u[tz, ty + 4, tx])) *
+    float u_yy = (cuConstParams.c0 * u[tz][ty][tx] +
+                  cuConstParams.c1 * (u[tz][ty - 1][tx] + u[tz][ty + 1][tx]) +
+                  cuConstParams.c2 * (u[tz][ty - 2][tx] + u[tz][ty + 2][tx]) +
+                  cuConstParams.c3 * (u[tz][ty - 3][tx] + u[tz][ty + 3][tx]) +
+                  cuConstParams.c4 * (u[tz][ty - 4][tx] + u[tz][ty + 4][tx])) *
                  cuConstParams.inv_hy2;
-    float u_zz = (cuConstParams.c0 * u[tz, ty, tx] +
-                  cuConstParams.c1 * (u[tz - 1, ty, tx] + u[tz + 1, ty, tx]) +
-                  cuConstParams.c2 * (u[tz - 2, ty, tx] + u[tz + 2, ty, tx]) +
-                  cuConstParams.c3 * (u[tz - 3, ty, tx] + u[tz + 3, ty, tx]) +
-                  cuConstParams.c4 * (u[tz - 4, ty, tx] + u[tz + 4, ty, tx])) *
+    float u_zz = (cuConstParams.c0 * u[tz][ty][tx] +
+                  cuConstParams.c1 * (u[tz - 1][ty][tx] + u[tz + 1][ty][tx]) +
+                  cuConstParams.c2 * (u[tz - 2][ty][tx] + u[tz + 2][ty][tx]) +
+                  cuConstParams.c3 * (u[tz - 3][ty][tx] + u[tz + 3][ty][tx]) +
+                  cuConstParams.c4 * (u[tz - 4][ty][tx] + u[tz + 4][ty][tx])) *
                  cuConstParams.inv_hz2;
     // now repeat same computation but for keys
     float k_xx = (cuConstParams.c0 * k[tz, ty, tx] +
-                  cuConstParams.c1 * (k[tz, ty, tx - 1] + k[tz, ty, tx + 1]) +
-                  cuConstParams.c2 * (k[tz, ty, tx - 2] + k[tz, ty, tx + 2]) +
-                  cuConstParams.c3 * (k[tz, ty, tx - 3] + k[tz, ty, tx + 3]) +
-                  cuConstParams.c4 * (k[tz, ty, tx - 4] + k[tz, ty, tx + 4])) *
+                  cuConstParams.c1 * (k[tz][ty][tx - 1] + k[tz][ty][tx + 1]) +
+                  cuConstParams.c2 * (k[tz][ty][tx - 2] + k[tz][ty][tx + 2]) +
+                  cuConstParams.c3 * (k[tz][ty][tx - 3] + k[tz][ty][tx + 3]) +
+                  cuConstParams.c4 * (k[tz][ty][tx - 4] + k[tz][ty][tx + 4])) *
                  cuConstParams.inv_hx2;
-    float k_yy = (cuConstParams.c0 * k[tz, ty, tx] +
-                  cuConstParams.c1 * (k[tz, ty - 1, tx] + k[tz, ty + 1, tx]) +
-                  cuConstParams.c2 * (k[tz, ty - 2, tx] + k[tz, ty + 2, tx]) +
-                  cuConstParams.c3 * (k[tz, ty - 3, tx] + k[tz, ty + 3, tx]) +
-                  cuConstParams.c4 * (k[tz, ty - 4, tx] + k[tz, ty + 4, tx])) *
+    float k_yy = (cuConstParams.c0 * k[tz][ty][tx] +
+                  cuConstParams.c1 * (k[tz][ty - 1][tx] + k[tz][ty + 1][tx]) +
+                  cuConstParams.c2 * (k[tz][ty - 2][tx] + k[tz][ty + 2][tx]) +
+                  cuConstParams.c3 * (k[tz][ty - 3][tx] + k[tz][ty + 3][tx]) +
+                  cuConstParams.c4 * (k[tz][ty - 4][tx] + k[tz][ty + 4][tx])) *
                  cuConstParams.inv_hy2;
-    float k_zz = (cuConstParams.c0 * k[tz, ty, tx] +
-                  cuConstParams.c1 * (k[tz - 1, ty, tx] + k[tz + 1, ty, tx]) +
-                  cuConstParams.c2 * (k[tz - 2, ty, tx] + k[tz + 2, ty, tx]) +
-                  cuConstParams.c3 * (k[tz - 3, ty, tx] + k[tz + 3, ty, tx]) +
-                  cuConstParams.c4 * (k[tz - 4, ty, tx] + k[tz + 4, ty, tx])) *
+    float k_zz = (cuConstParams.c0 * k[tz][ty][tx] +
+                  cuConstParams.c1 * (k[tz - 1][ty][tx] + k[tz + 1][ty][tx]) +
+                  cuConstParams.c2 * (k[tz - 2][ty][tx] + k[tz + 2][ty][tx]) +
+                  cuConstParams.c3 * (k[tz - 3][ty][tx] + k[tz + 3][ty][tx]) +
+                  cuConstParams.c4 * (k[tz - 4][ty][tx] + k[tz + 4][ty][tx])) *
                  cuConstParams.inv_hz2;
-    lap[tz, ty, tx] = cuConstParams.alpha * (u_xx + u_yy + u_zz + second_weight * (k_xx + k_yy + k_zz));
+    lap[tz][ty][tx] = cuConstParams.alpha * (u_xx + u_yy + u_zz + second_weight * (k_xx + k_yy + k_zz));
 }
 
 // __global__ void compute_laplacian(
@@ -238,7 +238,7 @@ __global__ void combine_rk4_step(
     if (tx >= Nx - cuConstParams.r || ty >= Ny - cuConstParams.r || tz >= Nz - cuConstParams.r || tx < cuConstParams.r || ty < cuConstParams.r || tz < cuConstParams.r)
         return;
 
-    u[tz, ty, tx] = u[tz, ty, tx] + (cuConstParams.dt / 6.0) * (k1[tz, ty, tx] + 2.0 * k2[tz, ty, tx] + 2.0 * k3[tz, ty, tx] + k4[tz, ty, tx]);
+    u[tz][ty][tx] = u[tz][ty][tx] + (cuConstParams.dt / 6.0) * (k1[tz][ty][tx] + 2.0 * k2[tz][ty][tx] + 2.0 * k3[tz][ty][tx] + k4[tz][ty][tx]);
 }               
 
 // __global__ void rk4_step(
@@ -320,24 +320,24 @@ torch::Tensor custom_kernel(
     }
 
     // 3D 8th-order 2nd-derivative Laplacian coefficients
-    float c0 = -205.0 / 72.0
-    float c1 =   8.0  /  5.0
-    float c2 =  -1.0  /  5.0
-    float c3 =   8.0  / 315.0
-    float c4 =  -1.0  / 560.0
+    float c0 = -205.0 / 72.0;
+    float c1 =   8.0  /  5.0;
+    float c2 =  -1.0  /  5.0;
+    float c3 =   8.0  / 315.0;
+    float c4 =  -1.0  / 560.0;
 
     // CFL stability (same constant, but now for RK4)
-    float c = 0.05
+    float c = 0.05;
 
-    float inv_hx2 = 1.0 / (hx * hx)
-    float inv_hy2 = 1.0 / (hy * hy)
-    float inv_hz2 = 1.0 / (hz * hz)
+    float inv_hx2 = 1.0 / (hx * hx);
+    float inv_hy2 = 1.0 / (hy * hy);
+    float inv_hz2 = 1.0 / (hz * hz);
 
-    float S  = inv_hx2 + inv_hy2 + inv_hz2
-    float dt = c / (alpha * S)
+    float S  = inv_hx2 + inv_hy2 + inv_hz2;
+    float dt = c / (alpha * S);
 
     // Radius of stencil
-    int r = 4
+    int r = 4;
 
     GlobalConstants params;
     params.c0 = c0;
@@ -386,7 +386,7 @@ torch::Tensor custom_kernel(
     ////
     // Launch your kernel here
     ////
-    for _ in range(n_steps):
+    for (int step = 0; step < n_steps; ++step) {
         get_k1<<<numBlocks, threadsPerBlock>>>(
             u_acc,
             k1_acc,
@@ -413,6 +413,7 @@ torch::Tensor custom_kernel(
             k3_acc,
             k4_acc
         );
+    }
         // compute_laplacian<<<numBlocks, threadsPerBlock>>>(
         //     u_acc,
         //     lap_acc,
