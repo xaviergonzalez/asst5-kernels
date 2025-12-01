@@ -361,13 +361,13 @@ torch::Tensor custom_kernel(
 
     // Allocate output tensor (or reuse u0 for in-place)
     u0 = u0.contiguous();
-    torch::Tensor k1 = torch::empty_like(u0);
+    torch::Tensor k1 = torch::zeros_like(u0);
     k1 = k1.contiguous();
-    torch::Tensor k2 = torch::empty_like(u0);
+    torch::Tensor k2 = torch::zeros_like(u0);
     k2 = k2.contiguous();
-    torch::Tensor k3 = torch::empty_like(u0);
+    torch::Tensor k3 = torch::zeros_like(u0);
     k3 = k3.contiguous();
-    torch::Tensor k4 = torch::empty_like(u0);
+    torch::Tensor k4 = torch::zeros_like(u0);
     k4 = k4.contiguous();
     auto u_acc = u0.packed_accessor32<float, 3, torch::RestrictPtrTraits>();
     auto k1_acc = k1.packed_accessor32<float, 3, torch::RestrictPtrTraits>();
