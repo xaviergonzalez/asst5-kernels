@@ -168,7 +168,7 @@ __global__ void get_k1(
     int tz = threadIdx.z + blockIdx.z * blockDim.z;
 
     // Boundary checks
-    if (tx >= Nx - cuConstParams.r || ty >= Ny - cuConstParams.r || tz >= Nz - cuConstParams.r || tx < cuConstParams.r || ty < cuConstParams.r || tz < cuConstParams.r)
+    if (tx >= cuConstParams.Nx - cuConstParams.r || ty >= cuConstParams.Ny - cuConstParams.r || tz >= cuConstParams.Nz - cuConstParams.r || tx < cuConstParams.r || ty < cuConstParams.r || tz < cuConstParams.r)
         return;
 
     get_laplacian_at_point(u, k1, tx, ty, tz);
@@ -186,7 +186,7 @@ __global__ void get_k2(
     int tz = threadIdx.z + blockIdx.z * blockDim.z;
 
     // Boundary checks
-    if (tx >= Nx - cuConstParams.r || ty >= Ny - cuConstParams.r || tz >= Nz - cuConstParams.r || tx < cuConstParams.r || ty < cuConstParams.r || tz < cuConstParams.r)
+    if (tx >= cuConstParams.Nx - cuConstParams.r || ty >= cuConstParams.Ny - cuConstParams.r || tz >= cuConstParams.Nz - cuConstParams.r || tx < cuConstParams.r || ty < cuConstParams.r || tz < cuConstParams.r)
         return;
 
     get_laplacian_two_points(u, k1, k2, tx, ty, tz, 0.5 * cuConstParams.dt);
@@ -202,7 +202,7 @@ __global__ void get_k3(
     int tz = threadIdx.z + blockIdx.z * blockDim.z;
 
     // Boundary checks
-    if (tx >= Nx - cuConstParams.r || ty >= Ny - cuConstParams.r || tz >= Nz - cuConstParams.r || tx < cuConstParams.r || ty < cuConstParams.r || tz < cuConstParams.r)
+    if (tx >= cuConstParams.Nx - cuConstParams.r || ty >= cuConstParams.Ny - cuConstParams.r || tz >= cuConstParams.Nz - cuConstParams.r || tx < cuConstParams.r || ty < cuConstParams.r || tz < cuConstParams.r)
         return;
     get_laplacian_two_points(u, k2, k3, tx, ty, tz, 0.5 * cuConstParams.dt);
 }
@@ -217,7 +217,7 @@ __global__ void get_k4(
     int tz = threadIdx.z + blockIdx.z * blockDim.z;
 
     // Boundary checks
-    if (tx >= Nx - cuConstParams.r || ty >= Ny - cuConstParams.r || tz >= Nz - cuConstParams.r || tx < cuConstParams.r || ty < cuConstParams.r || tz < cuConstParams.r)
+    if (tx >= cuConstParams.Nx - cuConstParams.r || ty >= cuConstParams.Ny - cuConstParams.r || tz >= cuConstParams.Nz - cuConstParams.r || tx < cuConstParams.r || ty < cuConstParams.r || tz < cuConstParams.r)
         return;
     get_laplacian_two_points(u, k3, k4, tx, ty, tz, cuConstParams.dt);
 }
@@ -235,9 +235,8 @@ __global__ void combine_rk4_step(
     int tz = threadIdx.z + blockIdx.z * blockDim.z;
 
     // Boundary checks
-    if (tx >= Nx - cuConstParams.r || ty >= Ny - cuConstParams.r || tz >= Nz - cuConstParams.r || tx < cuConstParams.r || ty < cuConstParams.r || tz < cuConstParams.r)
+    if (tx >= cuConstParams.Nx - cuConstParams.r || ty >= cuConstParams.Ny - cuConstParams.r || tz >= cuConstParams.Nz - cuConstParams.r || tx < cuConstParams.r || ty < cuConstParams.r || tz < cuConstParams.r)
         return;
-
     u[tz][ty][tx] = u[tz][ty][tx] + (cuConstParams.dt / 6.0) * (k1[tz][ty][tx] + 2.0 * k2[tz][ty][tx] + 2.0 * k3[tz][ty][tx] + k4[tz][ty][tx]);
 }               
 
