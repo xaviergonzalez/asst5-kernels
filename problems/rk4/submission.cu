@@ -6,8 +6,6 @@
 // Example: __global__ void kernel(...) { ... }
 //
 
-// TODO: problem. You have garbage values in your keys (in the boundary regions). How does this affect later computation? worth thinking hard about...
-
 struct GlobalConstants
 {
     float c0, c1, c2, c3, c4;
@@ -50,29 +48,11 @@ get_laplacian_at_point(
 // helper function for computing k2, k3, k4
 __device__ __inline__ void
 get_laplacian_two_points(
-    torch::PackedTensorAccessor32<float, 3, torch::RestrictPtrTraits> u,
+    torch::PackedTensorAccessor32<float, 3, torch::RestrictPtrTraits> k1,
     torch::PackedTensorAccessor32<float, 3, torch::RestrictPtrTraits> k,
     torch::PackedTensorAccessor32<float, 3, torch::RestrictPtrTraits> lap,
     int tx, int ty, int tz, float second_weight)
 {
-    float u_xx = (cuConstParams.c0 * u[tz][ty][tx] +
-                  cuConstParams.c1 * (u[tz][ty][tx - 1] + u[tz][ty][tx + 1]) +
-                  cuConstParams.c2 * (u[tz][ty][tx - 2] + u[tz][ty][tx + 2]) +
-                  cuConstParams.c3 * (u[tz][ty][tx - 3] + u[tz][ty][tx + 3]) +
-                  cuConstParams.c4 * (u[tz][ty][tx - 4] + u[tz][ty][tx + 4])) *
-                 cuConstParams.inv_hx2;
-    float u_yy = (cuConstParams.c0 * u[tz][ty][tx] +
-                  cuConstParams.c1 * (u[tz][ty - 1][tx] + u[tz][ty + 1][tx]) +
-                  cuConstParams.c2 * (u[tz][ty - 2][tx] + u[tz][ty + 2][tx]) +
-                  cuConstParams.c3 * (u[tz][ty - 3][tx] + u[tz][ty + 3][tx]) +
-                  cuConstParams.c4 * (u[tz][ty - 4][tx] + u[tz][ty + 4][tx])) *
-                 cuConstParams.inv_hy2;
-    float u_zz = (cuConstParams.c0 * u[tz][ty][tx] +
-                  cuConstParams.c1 * (u[tz - 1][ty][tx] + u[tz + 1][ty][tx]) +
-                  cuConstParams.c2 * (u[tz - 2][ty][tx] + u[tz + 2][ty][tx]) +
-                  cuConstParams.c3 * (u[tz - 3][ty][tx] + u[tz + 3][ty][tx]) +
-                  cuConstParams.c4 * (u[tz - 4][ty][tx] + u[tz + 4][ty][tx])) *
-                 cuConstParams.inv_hz2;
     // now repeat same computation but for keys
     float k_xx = (cuConstParams.c0 * k[tz][ty][tx] +
                   cuConstParams.c1 * (k[tz][ty][tx - 1] + k[tz][ty][tx + 1]) +
@@ -92,7 +72,7 @@ get_laplacian_two_points(
                   cuConstParams.c3 * (k[tz - 3][ty][tx] + k[tz + 3][ty][tx]) +
                   cuConstParams.c4 * (k[tz - 4][ty][tx] + k[tz + 4][ty][tx])) *
                  cuConstParams.inv_hz2;
-    lap[tz][ty][tx] = cuConstParams.alpha * (u_xx + u_yy + u_zz + second_weight * (k_xx + k_yy + k_zz));
+    lap[tz][ty][tx] = k1[tz][ty][tx] + cuConstParams.alpha * second_weight * (k_xx + k_yy + k_zz);
 }
 
 // __global__ void compute_laplacian(
@@ -178,7 +158,6 @@ __global__ void get_k1(
 }
 
 __global__ void get_k2(
-    torch::PackedTensorAccessor32<float, 3, torch::RestrictPtrTraits> u,
     torch::PackedTensorAccessor32<float, 3, torch::RestrictPtrTraits> k1,
     torch::PackedTensorAccessor32<float, 3, torch::RestrictPtrTraits> k2
 )
@@ -191,11 +170,11 @@ __global__ void get_k2(
     if (tx >= cuConstParams.Nx - cuConstParams.r || ty >= cuConstParams.Ny - cuConstParams.r || tz >= cuConstParams.Nz - cuConstParams.r || tx < cuConstParams.r || ty < cuConstParams.r || tz < cuConstParams.r)
         return;
 
-    get_laplacian_two_points(u, k1, k2, tx, ty, tz, 0.5 * cuConstParams.dt);
+    get_laplacian_two_points(k1, k1, k2, tx, ty, tz, 0.5 * cuConstParams.dt);
 }
 
 __global__ void get_k3(
-    torch::PackedTensorAccessor32<float, 3, torch::RestrictPtrTraits> u,
+    torch::PackedTensorAccessor32<float, 3, torch::RestrictPtrTraits> k1,
     torch::PackedTensorAccessor32<float, 3, torch::RestrictPtrTraits> k2,
     torch::PackedTensorAccessor32<float, 3, torch::RestrictPtrTraits> k3)
 {
@@ -206,11 +185,11 @@ __global__ void get_k3(
     // Boundary checks
     if (tx >= cuConstParams.Nx - cuConstParams.r || ty >= cuConstParams.Ny - cuConstParams.r || tz >= cuConstParams.Nz - cuConstParams.r || tx < cuConstParams.r || ty < cuConstParams.r || tz < cuConstParams.r)
         return;
-    get_laplacian_two_points(u, k2, k3, tx, ty, tz, 0.5 * cuConstParams.dt);
+    get_laplacian_two_points(k1, k2, k3, tx, ty, tz, 0.5 * cuConstParams.dt);
 }
 
 __global__ void get_k4(
-    torch::PackedTensorAccessor32<float, 3, torch::RestrictPtrTraits> u,
+    torch::PackedTensorAccessor32<float, 3, torch::RestrictPtrTraits> k1,
     torch::PackedTensorAccessor32<float, 3, torch::RestrictPtrTraits> k3,
     torch::PackedTensorAccessor32<float, 3, torch::RestrictPtrTraits> k4)
 {
@@ -221,7 +200,7 @@ __global__ void get_k4(
     // Boundary checks
     if (tx >= cuConstParams.Nx - cuConstParams.r || ty >= cuConstParams.Ny - cuConstParams.r || tz >= cuConstParams.Nz - cuConstParams.r || tx < cuConstParams.r || ty < cuConstParams.r || tz < cuConstParams.r)
         return;
-    get_laplacian_two_points(u, k3, k4, tx, ty, tz, cuConstParams.dt);
+    get_laplacian_two_points(k1, k3, k4, tx, ty, tz, cuConstParams.dt);
 }
 
 __global__ void combine_rk4_step(
@@ -393,17 +372,16 @@ torch::Tensor custom_kernel(
             k1_acc
         );
         get_k2<<<numBlocks, threadsPerBlock>>>(
-            u_acc,
             k1_acc,
             k2_acc
         );
         get_k3<<<numBlocks, threadsPerBlock>>>(
-            u_acc,
+            k1_acc,
             k2_acc,
             k3_acc
         );
         get_k4<<<numBlocks, threadsPerBlock>>>(
-            u_acc,
+            k1_acc,
             k3_acc,
             k4_acc
         );
