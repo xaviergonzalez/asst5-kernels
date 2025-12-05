@@ -18,9 +18,11 @@ So, as a first stab, I implemented each RK4 step as a separate kernel launch. Th
 
 > How is the code structured in the current step?
 
-
+I store parameters of the stencil and rk4 in constant memory. After initializing I do memory io. I then set up torch tensors for `u` (the value of the potential at each point) as well as for each of the 4 steps in rk4. I then have a four loop for the steps of rk4, where at each step I do a separate kernel launch for each of the 4 k values and a final kernel to take the rk4 step. Each kernel naively computes the math formula as laid out in the instructions.
 
 > What is the performance of the code (runtime)
+
+
 > What other statistics did you measure and look at for the current code?
 > What did you conclude from the measurements?
 > What was your hypothesis about what was limited performance? (Or how it might be improved?) How did you come to this hypothesis?
